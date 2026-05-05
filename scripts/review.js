@@ -1,5 +1,5 @@
-import fs from "fs";
-import { execSync } from "child_process";
+const fs = require("fs");
+const { execSync } = require("child_process");
 
 const diff = execSync("git diff HEAD~1").toString();
 
