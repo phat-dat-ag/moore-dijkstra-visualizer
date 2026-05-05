@@ -1,6 +1,8 @@
 const { execSync } = require("child_process");
 
 async function main() {
+  console.log("Trigger CI");
+
   console.log("API KEY EXISTS:", !!process.env.OPENAI_API_KEY);
 
   let diff = "";
