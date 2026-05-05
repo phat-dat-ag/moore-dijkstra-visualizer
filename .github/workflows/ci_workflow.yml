@@ -3,13 +3,24 @@ name: Cursor CI
 on:
   push:
     branches: [ "master" ]
+  pull_request:
 
 jobs:
-  test:
+  review:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run test
-        run: echo "CI is working"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install deps
+        run: npm install
+
+      - name: Run AI Review
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/review.js
