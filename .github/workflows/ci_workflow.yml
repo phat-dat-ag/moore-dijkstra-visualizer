@@ -1,5 +1,6 @@
 name: CI
 
+# add comment to test
 on:
   push:
     branches: [ "master" ]
