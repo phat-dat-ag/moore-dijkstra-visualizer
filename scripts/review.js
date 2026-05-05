@@ -3,7 +3,12 @@ const { execSync } = require("child_process");
 async function main() {
   console.log("API KEY EXISTS:", !!process.env.OPENAI_API_KEY);
 
-  const diff = execSync("git diff HEAD~1").toString();
+  let diff = "";
+  try {
+    diff = execSync("git diff HEAD~1").toString().slice(0, 4000);
+  } catch {
+    diff = execSync("git diff").toString().slice(0, 4000);
+  }
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -15,20 +20,23 @@ async function main() {
       body: JSON.stringify({
         model: "gpt-4.1-mini",
         messages: [
-          { role: "system", content: "You are a code reviewer" },
-          { role: "user", content: diff }
+          {
+            role: "system",
+            content: "You are a senior code reviewer. Give concise, actionable feedback."
+          },
+          {
+            role: "user",
+            content: `Review this code diff:\n${diff}`
+          }
         ]
       })
     });
 
     const data = await response.json();
 
-    if (data.error) {
-      console.log("⚠ API FAILED → fallback to local review");
-
-      console.log("=== AI REVIEW (FAKE) ===");
-      console.log("✔ Code structure is clear");
-      console.log("⚠ Consider improving variable naming");
+    if (!response.ok || data.error) {
+      console.log("API ERROR:");
+      console.log(JSON.stringify(data, null, 2));
       return;
     }
 
@@ -36,10 +44,7 @@ async function main() {
     console.log(data.choices[0].message.content);
 
   } catch (err) {
-    console.log("⚠ ERROR → fallback");
-
-    console.log("=== AI REVIEW (FAKE) ===");
-    console.log("✔ Code looks good");
+    console.error("REQUEST FAILED:", err.message);
   }
 }
 
